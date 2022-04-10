@@ -1,10 +1,8 @@
 mod args;
-use std::env;
-use std::str::FromStr;
-
 use args::Args;
 
 extern crate clarity;
+extern crate dotenv;
 extern crate ethereum_tx_sign;
 extern crate ethereum_types;
 extern crate hex;
@@ -15,6 +13,7 @@ use clarity::{Address, PrivateKey, Signature, Transaction};
 use ethereum_tx_sign::RawTransaction;
 #[allow(unused_imports)]
 use ethereum_types::{H160, H256, U256, U512};
+use std::str::FromStr;
 #[allow(unused_imports)]
 use web3::futures::Future;
 use web3::transports::Http;
@@ -23,19 +22,30 @@ use web3::types::Bytes;
 use web3::types::TransactionRequest;
 use web3::Web3;
 
+use dotenv::dotenv;
+use std::env;
+
+#[derive(Debug)]
+enum Web3Errors {
+    PrivateKeyIsInvalid,
+    ServerUrlNotFound,
+}
+
 // Unwrap() Give me the result of the computation, and if there was an error, panic and stop the program
 #[tokio::main]
-async fn main() -> web3::Result<()> {
+async fn main() -> Result<(), Web3Errors> {
     let args = Args::new();
+    dotenv().ok();
+    // Getting the Server Address from Environment
+    let server_url = &get_server_url();
 
     // Connectinig to Ganache Server
-    let transport: Http =
-        web3::transports::Http::new(&env::var("GANACHE_SERVER").unwrap()).unwrap();
+    let transport: Http = web3::transports::Http::new(server_url).unwrap();
     let web3: Web3<Http> = web3::Web3::new(transport);
 
     println!("Getting Etherem Accounts.");
     #[allow(unused_variables)]
-    let accounts = web3.eth().accounts().await?;
+    let accounts = web3.eth().accounts().await.unwrap();
     // accounts.push("00a329c0648769a73afac7f9381e08fb43dbea72".parse().unwrap());
 
     // Get private Key from Arguments
@@ -136,8 +146,12 @@ fn to_array_of8_bit_20(bytes: &[u8]) -> [u8; 20] {
 
 // Conversion of String to Web3 H256
 fn get_private_key(key: String) -> H256 {
-    let private_key = hex::decode(key).unwrap();
-    return H256(to_array(private_key.as_slice()));
+    match hex::decode(key) {
+        Ok(private_key) => {
+            return H256(to_array(private_key.as_slice()));
+        }
+        Err(_) => panic!("{:?}", Web3Errors::PrivateKeyIsInvalid),
+    }
 }
 
 // Remove 0x from Address
@@ -160,4 +174,11 @@ fn convert_amount_to_wei(amount: String) -> i64 {
 fn wei_to_eth(wei_val: U256) -> i64 {
     let res = wei_val.as_u32() as f64;
     (res / 1_000_000_000_000_000_000.0) as i64
+}
+
+fn get_server_url() -> String {
+    match &env::var("GANACHE_SERVER") {
+        Ok(server_url) => return server_url.to_string(),
+        Err(_) => panic!("{:?}", Web3Errors::ServerUrlNotFound),
+    }
 }
