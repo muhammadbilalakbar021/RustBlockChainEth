@@ -1,0 +1,10 @@
+- wee_alloc is a memory allocator designed for WebAssembly. It generates less than a kilobyte of
+  uncompressed WebAssembly code.
+
+- UnorderedMap is a data structure that utilizes underlying blockchain trie storage more efficiently
+
+- #[] is a declarative tag
+
+- Self refers to the current type, which is KeyValue.
+
+- While creating a new unordered map, we must pass the ID as Vec<u8> type so we are converting b"r" which is a byte string, to Vec<u8>, using the to_vec() function.
