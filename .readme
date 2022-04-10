@@ -1,2 +1,29 @@
 npm install -g ganache-cli
 ganache-cli -d
+
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+web3 = { version = "0.17.0", default-features = false, features = ["http"] }
+ethereum-tx-sign = "0.0.2"
+ethereum-types = "0.4"
+hex = "0.3.1"
+tokio = { version = "1", features = ["full"] }
+clarity = "0.5.1"
+dotenv = "0.15.0"
+ethers = "0.6.2"
+serde_json = "1.0.79"
+rust-crypto = "0.2.36"
+near-sdk = "3.1.0"
+
+[profile.release]
+codegen-units = 1
+# Tell `rustc` to optimize for small code size.
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+# Opt into extra safety checks on arithmetic operations https://stackoverflow.com/a/64136471/249801
+overflow-checks = true
