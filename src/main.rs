@@ -102,8 +102,8 @@ async fn main() -> Result<(), Web3Errors> {
     let balance_after = web3.eth().balance(to_account_key, None).await.unwrap();
 
     println!("TX Hash: {:?}", tx_hash);
-    println!("Balance before: {}", balance_before);
-    println!("Balance after: {}", balance_after);
+    println!("Balance before: {}", wei_to_eth(balance_before.to_string()));
+    println!("Balance after: {}", wei_to_eth(balance_after.to_string()));
 
     Ok(())
 }
@@ -170,10 +170,10 @@ fn convert_amount_to_wei(amount: String) -> i64 {
 }
 
 // Conversion of WEI to f64
-#[allow(dead_code)]
-fn wei_to_eth(wei_val: U256) -> i64 {
-    let res = wei_val.as_u32() as f64;
-    (res / 1_000_000_000_000_000_000.0) as i64
+fn wei_to_eth(amount: String) -> f64 {
+    let amount_to_convert: f64 = amount.trim().parse().expect("Wanted a number");
+    let value_to_transfer = amount_to_convert / 1000000000000000000.0;
+    value_to_transfer as f64
 }
 
 fn get_server_url() -> String {
