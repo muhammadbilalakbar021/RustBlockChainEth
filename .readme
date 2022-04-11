@@ -1,0 +1,15 @@
+#For Tests 
+- cargo test -- --nocapture
+
+#For Build (WASM)
+- cargo build --target wasm32-unknown-unknown --release
+
+# For Creating Sub Accounts
+- near create-account rust_near_smart_contract.bilalakbar.testnet --masterAccount bilalakbar.testnet --initialBalance 20
+
+- near deploy --wasmFile target/wasm32-unknown-unknown/release/rust_near_smart_contract.wasm --accountId rust_near_smart_contract.bilalakbar.testnet
+
+# MEthods in Our Smart Contracts
+- near call rust_near_smart_contract.bilalakbar.testnet increment --accountId rust_near_smart_contract.bilalakbar.testnet
+- near call rust_near_smart_contract.bilalakbar.testnet decrement --accountId rust_near_smart_contract.bilalakbar.testnet
+

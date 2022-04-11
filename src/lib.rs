@@ -1,52 +1,45 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::UnorderedMap;
 use near_sdk::{env, near_bindgen};
 
 near_sdk::setup_alloc!();
 
-#[cfg(target_arch = "wasm32")]
-#[global_allocator]
-static ALLOC: near_sdk::wee_alloc::WeeAlloc<'_> = near_sdk::wee_alloc::WeeAlloc::INIT;
-// wee_alloc is a memory allocator designed for WebAssembly. It generates less than a kilobyte of
-//uncompressed WebAssembly code.
-
-// 1. Main Struct
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize)]
-pub struct KeyValue {
-    pairs: UnorderedMap<String, String>,
+#[derive(Default, BorshDeserialize, BorshSerialize)]
+pub struct Counter {
+    val: i8, // i8 is signed. unsigned integers are also available: u8, u16, u32, u64, u128
 }
 
-// 2. Default Implementation
-impl Default for KeyValue {
-    fn default() -> Self {
-        Self {
-            pairs: UnorderedMap::new(b"r".to_vec()),
-        }
-    }
-}
-
-// 3. Core Logic
 #[near_bindgen]
-impl KeyValue {
-    pub fn create_update(&mut self, k: String, v: String) {
-        env::log(b"created or updated");
-        self.pairs.insert(&k, &v);
+impl Counter {
+    pub fn get_num(&self) -> i8 {
+        return self.val;
     }
 
-    pub fn read(&self, k: String) -> Option<String> {
-        env::log(b"read");
-        return self.pairs.get(&k);
+    pub fn increment(&mut self) {
+        self.val += 1;
+        let log_message = format!("Increased number to {}", self.val);
+        env::log(log_message.as_bytes());
+        after_counter_change();
     }
 
-    pub fn delete(&mut self, k: String) {
-        env::log(b"delete");
-        self.pairs.remove(&k);
+    pub fn decrement(&mut self) {
+        self.val -= 1;
+        let log_message = format!("Decreased number to {}", self.val);
+        env::log(log_message.as_bytes());
+        after_counter_change();
+    }
+
+    /// Reset to zero.
+    pub fn reset(&mut self) {
+        self.val = 0;
+        env::log(b"Reset counter to zero");
     }
 }
 
-// 4. Tests
-#[cfg(not(target_arch = "wasm32"))]
+fn after_counter_change() {
+    env::log("Make sure you don't overflow, my friend.".as_bytes());
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -55,10 +48,10 @@ mod tests {
 
     fn get_context(input: Vec<u8>, is_view: bool) -> VMContext {
         VMContext {
-            current_account_id: "alice_near".to_string(),
-            signer_account_id: "bob_near".to_string(),
+            current_account_id: "alice.testnet".to_string(),
+            signer_account_id: "robert.testnet".to_string(),
             signer_account_pk: vec![0, 1, 2],
-            predecessor_account_id: "carol_near".to_string(),
+            predecessor_account_id: "jane.testnet".to_string(),
             input,
             block_index: 0,
             block_timestamp: 0,
@@ -70,29 +63,44 @@ mod tests {
             random_seed: vec![0, 1, 2],
             is_view,
             output_data_receivers: vec![],
-            epoch_height: 0,
+            epoch_height: 19,
         }
     }
 
-    // Test 1
+    // mark individual unit tests with #[test] for them to be registered and fired
     #[test]
-    fn create_read_pair() {
+    fn increment() {
+        // set up the mock context into the testing environment
         let context = get_context(vec![], false);
         testing_env!(context);
-        let mut contract = KeyValue::default();
-        contract.create_update("first_key".to_string(), "hello".to_string());
-        assert_eq!(
-            "hello".to_string(),
-            contract.read("first_key".to_string()).unwrap()
-        );
+        // instantiate a contract variable with the counter at zero
+        let mut contract = Counter { val: 0 };
+        contract.increment();
+        println!("Value after increment: {}", contract.get_num());
+        // confirm that we received 1 when calling get_num
+        assert_eq!(1, contract.get_num());
     }
 
-    // Test 2
     #[test]
-    fn read_nonexistent_pair() {
-        let context = get_context(vec![], true);
+    fn decrement() {
+        let context = get_context(vec![], false);
         testing_env!(context);
-        let contract = KeyValue::default();
-        assert_eq!(None, contract.read("first_key".to_string()));
+        let mut contract = Counter { val: 0 };
+        contract.decrement();
+        println!("Value after decrement: {}", contract.get_num());
+        // confirm that we received -1 when calling get_num
+        assert_eq!(-1, contract.get_num());
+    }
+
+    #[test]
+    fn increment_and_reset() {
+        let context = get_context(vec![], false);
+        testing_env!(context);
+        let mut contract = Counter { val: 0 };
+        contract.increment();
+        contract.reset();
+        println!("Value after reset: {}", contract.get_num());
+        // confirm that we received -1 when calling get_num
+        assert_eq!(0, contract.get_num());
     }
 }
