@@ -1,7 +1,0 @@
-spl-token create-token --url devnet
-spl-token balance FzPfaUna7iXxNQfExM52QLHJh8oG2CvfYuWbUADzLCsG --url devnet
-spl-token create-account FzPfaUna7iXxNQfExM52QLHJh8oG2CvfYuWbUADzLCsG --url devnet
-spl-token mint EwxuGzHJYqRSofrXTqG2wHP8m2aq5r7EuUvhaiBXmUJz 100000 --url devnet
-
-solana-keygen new
-solana airdrop 2 Ax9ZdsQZsEbcRo1541ox8G8pStAkRp9bcHY38Q1x1VsR --url devnet
