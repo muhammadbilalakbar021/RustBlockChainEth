@@ -1,7 +1,17 @@
 spl-token create-token --url devnet
 spl-token balance FzPfaUna7iXxNQfExM52QLHJh8oG2CvfYuWbUADzLCsG --url devnet
 spl-token create-account FzPfaUna7iXxNQfExM52QLHJh8oG2CvfYuWbUADzLCsG --url devnet
-spl-token mint EwxuGzHJYqRSofrXTqG2wHP8m2aq5r7EuUvhaiBXmUJz 100000 --url devnet
+spl-token mint FzPfaUna7iXxNQfExM52QLHJh8oG2CvfYuWbUADzLCsG 100000 --url devnet
+spl-token transfer FzPfaUna7iXxNQfExM52QLHJh8oG2CvfYuWbUADzLCsG 100 2hDfAkRyDY65SV37zf5yHs9y28kvTgApV6kMJ95GdEqY --url devnet
 
 solana-keygen new
 solana airdrop 2 Ax9ZdsQZsEbcRo1541ox8G8pStAkRp9bcHY38Q1x1VsR --url devnet
+
+
+Solana Path 
+=> export PATH="/home/quantumalgopot/.local/share/solana/install/active_release/bin:$PATH"
+
+If Build Fails "Cargo Anchor Cli"
+=> npm i -g @project-serum/anchor-cli
+=> sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y pkg-config build-essential libudev-dev
+
